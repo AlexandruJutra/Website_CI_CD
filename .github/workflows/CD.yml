@@ -1,4 +1,4 @@
-name: Upload Website
+name: CD workflow
 
 on:
   workflow_dispatch:
