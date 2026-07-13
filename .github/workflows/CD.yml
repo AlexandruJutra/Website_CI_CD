@@ -1,4 +1,4 @@
-name: Upload Website
+name: CD workflow
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
       with:
         args: --follow-symlinks --delete --exclude '.git/*' --exclude '.gitignore' --exclude '.github/*' --exclude 'LICENSE.md' --exclude 'README.md'
       env:
-        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        AWS_S3_BUCKET: ${{ steps.terraform.outputs.dev_bucket_name }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: 'eu-north-1'   # optional: defaults to eu-north-1

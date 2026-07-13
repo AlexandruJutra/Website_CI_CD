@@ -45,9 +45,6 @@
 name: 'Terraform'
 
 on:
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
   workflow_dispatch:
 
 permissions:
@@ -58,33 +55,29 @@ jobs:
     name: 'Terraform'
     runs-on: ubuntu-latest
     environment: production
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: 'eu-north-1'   # optional: defaults to eu-north-1
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
+        working-directory: .terraform
 
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Restore Terraform state from a previous run so destroy knows what exists
-    - name: Restore Terraform State
-      uses: actions/cache/restore@v4
+    # Configure AWS Credentials to access S3 backend and resources
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
-        path: terraform.tfstate
-        key: terraform-state-${{ github.ref }}
-        restore-keys: |
-          terraform-state-
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1
 
     # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v3
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
@@ -94,10 +87,6 @@ jobs:
     - name: Terraform Format
       run: terraform fmt -check
 
-    # Destroy previously created buckets before recreating them
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve -input=false
-
     # Generates an execution plan for Terraform
     - name: Terraform Plan
       run: terraform plan -input=false
@@ -106,10 +95,3 @@ jobs:
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
     - name: Terraform Apply
       run: terraform apply -auto-approve -input=false
-
-    # Save the updated Terraform state so the next run can destroy these buckets
-    - name: Save Terraform State
-      uses: actions/cache/save@v4
-      with:
-        path: terraform.tfstate
-        key: terraform-state-${{ github.sha }}
