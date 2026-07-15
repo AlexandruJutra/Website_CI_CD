@@ -1,4 +1,14 @@
 terraform {
+  # Configure the backend to use an S3 bucket for storing the Terraform state file
+  backend "s3" {
+    bucket = "terraform-state-bucket-md-2026"
+    key    = "dev/terraform.tfstate"
+    region = "eu-north-1"
+    encrypt = true
+    use_lockfile = true
+  }
+
+  #set the required providers for the project
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -54,16 +64,4 @@ resource "aws_s3_bucket" "prod_bucket" {
     Name        = "My bucket"
     Environment = "Prod"
   }
-}
-
-output "dev_bucket_name" {
-  value = aws_s3_bucket.Dev_bucket.bucket
-}
-
-output "test_bucket_name" {
-  value = aws_s3_bucket.Test_bucket.bucket
-}
-
-output "prod_bucket_name" {
-  value = aws_s3_bucket.prod_bucket.bucket
 }
