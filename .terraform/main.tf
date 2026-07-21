@@ -81,11 +81,11 @@ resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
 }
 
 resource "aws_s3_object" "object" {
-  for_each = fileset("${path.module}/s3_bucket", "**/*")
+  for_each = fileset("${path.module}/../s3_bucket", "**/*")
   bucket = aws_s3_bucket.Dev_bucket.id
   key    = each.value
-  source = "${path.module}/s3_bucket/${each.value}"
-  etag = filemd5("${path.module}/s3_bucket/${each.value}")
+  source = "${path.module}/../s3_bucket/${each.value}"
+  etag = filemd5("${path.module}/../s3_bucket/${each.value}")
   content_type = lookup({
     "html" = "text/html",
     "css"  = "text/css",

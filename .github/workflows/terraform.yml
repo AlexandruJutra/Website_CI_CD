@@ -60,6 +60,7 @@ jobs:
     defaults:
       run:
         shell: bash
+        working-directory: .terraform
 
     steps:
     # Checkout the repository to the GitHub Actions runner
@@ -73,13 +74,6 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-north-1
-    
-    # Change directory to .terraform
-    - name: Change directory to .terraform and list files
-      run: |
-        cd .terraform
-        pwd
-        ls -la
 
     # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
     - name: Setup Terraform
