@@ -3,4 +3,3 @@
 
 # Prefix used in all S3 bucket names (e.g. dev-bucket-<bucket_prefix>-<suffix>)
 bucket_prefix = "godwin-bakery"
-terraform_state_bucket = "terraform-state-bucket-md-2026"
