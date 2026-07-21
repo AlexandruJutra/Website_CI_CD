@@ -75,8 +75,11 @@ jobs:
         aws-region: eu-north-1
     
     # Change directory to .terraform
-    - name: Change directory to .terraform
-      run: cd .terraform && pwd
+    - name: Change directory to .terraform and list files
+      run: |
+        cd .terraform
+        pwd
+        ls -la
 
     # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
     - name: Setup Terraform
