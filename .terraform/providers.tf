@@ -1,4 +1,4 @@
-  terraform {
+terraform {
   # set the required providers for the project
   required_providers {
     aws = {

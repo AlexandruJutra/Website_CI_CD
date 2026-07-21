@@ -55,43 +55,43 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 }
 
 resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
-  bucket = aws_s3_bucket.Dev_bucket.id
-  depends_on = [ aws_s3_bucket_public_access_block.block ]
+  bucket     = aws_s3_bucket.Dev_bucket.id
+  depends_on = [aws_s3_bucket_public_access_block.block]
+
   policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "AllowCloudFront",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "cloudfront.amazonaws.com"
-      },
-      "Action": [
-        "s3:GetObject"
-      ],
-      "Resource": "${aws_s3_bucket.Dev_bucket.arn}/*",
-      "Condition": {
-        "StringEquals": {
-          "AWS:SourceArn": aws_cloudfront_distribution.s3_distribution.arn
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudFront"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = ["s3:GetObject"]
+        Resource = "${aws_s3_bucket.Dev_bucket.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.s3_distribution.arn
+          }
         }
       }
-    }
-  ]
-})
+    ]
+  })
 }
 
 resource "aws_s3_object" "object" {
   for_each = fileset("${path.module}/../s3_bucket", "**/*")
-  bucket = aws_s3_bucket.Dev_bucket.id
-  key    = each.value
-  source = "${path.module}/../s3_bucket/${each.value}"
-  etag = filemd5("${path.module}/../s3_bucket/${each.value}")
+  bucket   = aws_s3_bucket.Dev_bucket.id
+  key      = each.value
+  source   = "${path.module}/../s3_bucket/${each.value}"
+  etag     = filemd5("${path.module}/../s3_bucket/${each.value}")
+
   content_type = lookup({
-    "html" = "text/html",
-    "css"  = "text/css",
-    "js"   = "application/javascript",
-    "png"  = "image/png",
-    "jpg"  = "image/jpeg",
+    "html" = "text/html"
+    "css"  = "text/css"
+    "js"   = "application/javascript"
+    "png"  = "image/png"
+    "jpg"  = "image/jpeg"
   }, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
 }
 
