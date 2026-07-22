@@ -1,10 +1,5 @@
-resource "random_integer" "bucket_suffix" {
-  min = 1000
-  max = 9999
-}
-
 resource "aws_s3_bucket" "Dev_bucket" {
-  bucket        = "dev-bucket-${var.bucket_prefix}-${random_integer.bucket_suffix.result}"
+  bucket        = "dev-bucket-${var.bucket_prefix}-1997"
   force_destroy = true
 
   tags = {
@@ -16,26 +11,6 @@ resource "aws_s3_bucket" "Dev_bucket" {
     create_before_destroy = true
   }
 }
-
-# resource "aws_s3_bucket" "Test_bucket" {
-#   bucket        = "test-bucket-${var.bucket_prefix}-${random_integer.bucket_suffix.result}"
-#   force_destroy = true
-
-#   tags = {
-#     Name        = "My bucket"
-#     Environment = "Test"
-#   }
-# }
-
-# resource "aws_s3_bucket" "prod_bucket" {
-#   bucket        = "prod-bucket-${var.bucket_prefix}-${random_integer.bucket_suffix.result}"
-#   force_destroy = true
-
-#   tags = {
-#     Name        = "My bucket"
-#     Environment = "Prod"
-#   }
-# }
 
 resource "aws_s3_bucket_public_access_block" "block" {
   bucket = aws_s3_bucket.Dev_bucket.id
