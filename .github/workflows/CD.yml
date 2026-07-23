@@ -27,7 +27,6 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        AWS_S3_BUCKET: ${{ steps.Terraform_Init.outputs.s3_dev_bucket_name.value }}
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-north-1
@@ -44,11 +43,16 @@ jobs:
     - name: Terraform Format
       run: terraform fmt -check
 
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
     # Check-out repo
     - uses: actions/checkout@master
 
     # Sync files to S3 bucket
     - uses: jakejarvis/s3-sync-action@master
       with:
+        AWS_S3_BUCKET: ${{ steps.Terraform_Init.outputs.s3_dev_bucket_name.value }}
         args: --follow-symlinks --delete --exclude '.git/*' --exclude '.gitignore' --exclude '.github/*' --exclude 'LICENSE.md' --exclude 'README.md
 
