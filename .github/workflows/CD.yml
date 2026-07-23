@@ -4,7 +4,7 @@ name: 'CD_workflow'
 defaults:
   run:
     shell: bash
-    working-directory: .github/workflows
+    working-directory: ./
 
 on:
   workflow_dispatch:
