@@ -16,7 +16,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./
+        working-directory: .terraform
 
     steps:
     # Checkout the repository to the GitHub Actions runner
@@ -47,10 +47,12 @@ jobs:
     - name: Terraform Plan
       run: terraform plan -input=false
 
+    #Go to root directory
+    - name: Go to root directory
+      run: cd ..
+
     # Check-out repo
     - uses: actions/checkout@master
-
-    # Sync files to S3 bucket
     - uses: jakejarvis/s3-sync-action@master
       with:
         AWS_S3_BUCKET: ${{ steps.Terraform_Init.outputs.s3_dev_bucket_name.value }}
