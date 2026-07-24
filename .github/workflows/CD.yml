@@ -18,8 +18,12 @@ jobs:
       - name: Trigger_Terraform_workflow
         env:
           GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
-        run: gh workflow run terraform.yml 
+        run: gh workflow run terraform.yml
 
+  deploy:
+    needs: trigger-job
+    runs-on: ubuntu-latest
+    steps:
       - uses: jakejarvis/s3-sync-action@master
         with:
           # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are already inherited automatically!
