@@ -40,11 +40,21 @@ jobs:
     needs: trigger-job
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
       - uses: jakejarvis/s3-sync-action@master
         with:
-          # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are already inherited automatically!
-          AWS_S3_BUCKET: ${{ needs.trigger-job.outputs.s3_dev_bucket_name }} # This is the output from the Terraform workflow
-          AWS_REGION: 'eu-north-1'   # optional: defaults to eu-north-1
+          # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are resolved from environment
+          AWS_S3_BUCKET: ${{ needs.trigger-job.outputs.s3_dev_bucket_name }}
+          AWS_REGION: 'eu-north-1'
           args: --follow-symlinks --delete --exclude '.git/*' --exclude '.gitignore' --exclude '.github/*' --exclude 'LICENSE.md' --exclude 'README.md'
 
   # terraform:
