@@ -11,7 +11,7 @@ jobs:
   trigger-job:
     runs-on: ubuntu-latest
     outputs:
-      s3_dev_bucket_name: ${{ steps.get_bucket_name.outputs.s3_dev_bucket_name }}
+      s3_dev_bucket_name: ${{ steps.Trigger_Terraform_workflow.outputs.bucket_name }}
     steps:
       # Checkout repo first so that git context and repository files are available
       - name: Checkout
@@ -23,18 +23,7 @@ jobs:
           GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
         run: |
           gh workflow run terraform.yml
-          sleep 10
-          # Get the run ID of the triggered workflow
-          RUN_ID=$(gh run list --workflow=terraform.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-          echo "Watching workflow run: $RUN_ID"
-          gh run watch "$RUN_ID" --exit-status
-
-      - name: Get S3 Bucket Name
-        id: get_bucket_name
-        run: |
-          PREFIX=$(grep -E '^\s*bucket_prefix\s*=' .terraform/terraform.tfvars | cut -d'"' -f2)
-          BUCKET_NAME="dev-bucket-${PREFIX}-1997"
-          echo "s3_dev_bucket_name=${BUCKET_NAME}" >> $GITHUB_OUTPUT
+          echo "bucket_name=$(terraform output -raw s3_dev_bucket_name)" >> $GITHUB_OUTPUT
 
   deploy:
     needs: trigger-job
