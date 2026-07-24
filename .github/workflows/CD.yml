@@ -8,30 +8,35 @@ permissions:
   contents: read
 
 jobs:
-  # trigger-job:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     s3_dev_bucket_name: ${{ steps.Trigger_Terraform_workflow.outputs.bucket_name }}
-  #   steps:
-  #     # Checkout repo first so that git context and repository files are available
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+  trigger-job:
+    runs-on: ubuntu-latest
+    outputs:
+      s3_dev_bucket_name: ${{ steps.Trigger_Terraform_workflow.outputs.bucket_name }}
+    steps:
+      # Checkout repo first so that git context and repository files are available
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Trigger_Terraform_workflow
-  #       id: Trigger_Terraform_workflow
-  #       env:
-  #         GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
-  #       run: |
-  #         gh workflow run terraform.yml
+      - name: Trigger_Terraform_workflow
+        id: Trigger_Terraform_workflow
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
+        run: |
+          gh workflow run terraform.yml
+      
+      - name: Wait for CI workflow to complete
+        uses: ArcticLampyrid/action-wait-for-workflow@v1
+        with:
+          workflow: terraform.yml
+      
+      - name: Get Terraform Output
+        run: echo "bucket_name=$(terraform output -raw bucket_name)" >> $GITHUB_OUTPUT
 
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
-
-      - name: Trigger Terraform workflow
-        uses: ./.github/workflows/terraform.yml
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
