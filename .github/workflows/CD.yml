@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trigger Terraform workflow
+      - name: Trigger_Terraform_workflow
         env:
           GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
         run: gh workflow run terraform.yml 
@@ -23,7 +23,7 @@ jobs:
       - uses: jakejarvis/s3-sync-action@master
         with:
           # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are already inherited automatically!
-          AWS_S3_BUCKET: ${{ steps.Terraform_Apply.outputs.s3_dev_bucket_name.value }}
+          AWS_S3_BUCKET: ${{ steps.Trigger_Terraform_workflow.outputs.s3_dev_bucket_name }} # This is the output from the Terraform workflow
           AWS_REGION: 'eu-north-1'   # optional: defaults to eu-north-1
           args: --follow-symlinks --delete --exclude '.git/*' --exclude '.gitignore' --exclude '.github/*' --exclude 'LICENSE.md' --exclude 'README.md
 
