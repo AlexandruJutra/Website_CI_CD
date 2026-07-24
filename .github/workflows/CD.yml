@@ -1,10 +1,5 @@
 name: 'CD_workflow'
 
-# Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
-defaults:
-  run:
-    shell: bash
-    working-directory: ./
 
 on:
   workflow_dispatch:
@@ -16,17 +11,17 @@ jobs:
   trigger-job:
     runs-on: ubuntu-latest
     steps:
+      # Checkout repo first so that git context and repository files are available
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Trigger Terraform workflow
         env:
           GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
         run: |
           gh workflow run terraform.yml \
             -f environment="production"
-        #Go to root directory
-      - name: Go to root directory
-        run: cd ..
-            # Check-out repo
-      - uses: actions/checkout@master
+
       - uses: jakejarvis/s3-sync-action@master
         with:
           # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are already inherited automatically!
