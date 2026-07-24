@@ -23,10 +23,9 @@ jobs:
           GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
         run: |
           gh workflow run terraform.yml
-          echo "bucket_name=$(terraform output -raw s3_dev_bucket_name)" >> $GITHUB_OUTPUT
 
   deploy:
-    needs: trigger-job
+    needs: terraform
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
