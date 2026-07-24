@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   trigger-job:
-    needs: terraform
     runs-on: ubuntu-latest
     steps:
       # Checkout repo first so that git context and repository files are available
