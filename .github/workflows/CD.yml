@@ -33,6 +33,7 @@ jobs:
         run: echo "bucket_name=$(terraform output -raw bucket_name)" >> $GITHUB_OUTPUT
 
   deploy:
+    needs: trigger-job
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
