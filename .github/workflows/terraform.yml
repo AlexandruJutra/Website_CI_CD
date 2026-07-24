@@ -96,7 +96,7 @@ jobs:
     - name: Terraform Apply
       run: terraform apply -auto-approve -input=false
 
-    # - name: Output bucket name
-    #   run: |
-    #     cd .terraform
-    #     terraform output -raw s3_dev_bucket_name
+    - name: Output bucket name
+      run: |
+        cd .terraform
+        terraform output -raw s3_dev_bucket_name
