@@ -18,9 +18,7 @@ jobs:
       - name: Trigger Terraform workflow
         env:
           GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
-        run: |
-          gh workflow run terraform.yml \
-            -f environment="production"
+        run: gh workflow run terraform.yml 
 
       - uses: jakejarvis/s3-sync-action@master
         with:
