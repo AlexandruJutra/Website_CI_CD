@@ -8,32 +8,58 @@ permissions:
   contents: read
 
 jobs:
-  trigger-job:
+  terraform:
+    name: 'terraform'
     runs-on: ubuntu-latest
     outputs:
-      s3_dev_bucket_name: ${{ steps.Trigger_Terraform_workflow.outputs.bucket_name }}
-    steps:
-      # Checkout repo first so that git context and repository files are available
-      - name: Checkout
-        uses: actions/checkout@v4
+      s3_dev_bucket_name: ${{ steps.Get_Terraform_Output.outputs.bucket_name }}
+    environment: production
 
-      - name: Trigger_Terraform_workflow
-        id: Trigger_Terraform_workflow
-        env:
-          GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
-        run: |
-          gh workflow run terraform.yml
-      
-      - name: Wait for CI workflow to complete
-        uses: ArcticLampyrid/action-wait-for-workflow@v1
-        with:
-          workflow: terraform.yml
-      
-      - name: Get Terraform Output
-        run: echo "bucket_name=$(terraform output -raw bucket_name)" >> $GITHUB_OUTPUT
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: .terraform
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Configure AWS Credentials to access S3 backend and resources
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-north-1
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
+      # On push to "main", build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -input=false
+
+    - name: Get Terraform Output
+      run: echo "bucket_name=$(terraform output -raw s3_dev_bucket_name)" >> $GITHUB_OUTPUT
 
   deploy:
-    needs: trigger-job
+    needs: terraform
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -49,7 +75,7 @@ jobs:
       - uses: jakejarvis/s3-sync-action@master
         with:
           # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are resolved from environment
-          AWS_S3_BUCKET: ${{ needs.trigger-job.outputs.s3_dev_bucket_name }}
+          AWS_S3_BUCKET: ${{ needs.terraform.outputs.s3_dev_bucket_name }}
           AWS_REGION: 'eu-north-1'
           args: --follow-symlinks --delete --exclude '.git/*' --exclude '.gitignore' --exclude '.github/*' --exclude 'LICENSE.md' --exclude 'README.md'
 
