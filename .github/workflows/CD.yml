@@ -56,6 +56,7 @@ jobs:
       run: terraform apply -auto-approve -input=false
 
     - name: Get Terraform Output
+      id: Get_Terraform_Output
       run: echo "bucket_name=$(terraform output -raw s3_dev_bucket_name)" >> $GITHUB_OUTPUT
 
   deploy:
