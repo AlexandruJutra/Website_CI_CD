@@ -8,21 +8,21 @@ permissions:
   contents: read
 
 jobs:
-  trigger-job:
-    runs-on: ubuntu-latest
-    outputs:
-      s3_dev_bucket_name: ${{ steps.Trigger_Terraform_workflow.outputs.bucket_name }}
-    steps:
-      # Checkout repo first so that git context and repository files are available
-      - name: Checkout
-        uses: actions/checkout@v4
+  # trigger-job:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     s3_dev_bucket_name: ${{ steps.Trigger_Terraform_workflow.outputs.bucket_name }}
+  #   steps:
+  #     # Checkout repo first so that git context and repository files are available
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Trigger_Terraform_workflow
-        id: Trigger_Terraform_workflow
-        env:
-          GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
-        run: |
-          gh workflow run terraform.yml
+  #     - name: Trigger_Terraform_workflow
+  #       id: Trigger_Terraform_workflow
+  #       env:
+  #         GH_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }} # Default GITHUB_TOKEN won't trigger other workflows!
+  #       run: |
+  #         gh workflow run terraform.yml
 
   deploy:
     needs: terraform
@@ -30,6 +30,9 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Trigger Terraform workflow
+        uses: ./.github/workflows/terraform.yml
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
